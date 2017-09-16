@@ -6,6 +6,9 @@
 
 data transportation tool, from one to another.such as,file, kafka, hdfs etc.
 
+### Framwwork
+![Framework](https://github.com/luopengift/transport/blob/master/Image/png/TransportFramework.png)
+
 ### Go version >= 1.9.0
 
 * Demo: [Example](https://github.com/luopengift/transport/blob/master/doc/EXAMPLE.md)
@@ -59,9 +62,10 @@ type Outputer interface {
 - [x] [kafka](https://github.com/luopengift/transport/blob/master/plugins/output/kafka/README.md): kafka
 - [x] [null](https://github.com/luopengift/transport/blob/master/plugins/output/null/README.md): 类似于/dev/null,输出到空
 - [x] [std](https://github.com/luopengift/transport/blob/master/plugins/output/std/README.md): stdout,标准输出
-- [x] [elasticsearch](https://github.com/luopengift/transport/blob/master/plugins/output/elasticsearch/README.md): es API /_bulk
+- [x] [elasticsearch](https://github.com/luopengift/transport/blob/master/plugins/output/elasticsearch/README.md): es API `/_bulk`
 - [x] [tcp](https://github.com/luopengift/transport/blob/master/plugins/output/tcp/README.md): tcp
 - [x] [hdfs](https://github.com/luopengift/transport/blob/master/plugins/output/hdfs/README.md): hdfs
+- [x] [influxdb](https://github.com/luopengift/transport/blob/master/plugins/output/influxdb/README.md): influxdb
 
 ### Handler组件:
 - [x] null,直接连接input,output
