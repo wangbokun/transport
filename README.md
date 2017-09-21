@@ -3,6 +3,7 @@
 [![BuildStatus](https://travis-ci.org/luopengift/transport.svg?branch=master)](https://travis-ci.org/luopengift/transport)
 [![GoDoc](https://godoc.org/github.com/luopengift/transport?status.svg)](https://godoc.org/github.com/luopengift/transport)
 [![GoWalker](https://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/luopengift/transport)
+[![License](https://img.shields.io/badge/LICENSE-Apache2.0-ff69b4.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 data transportation tool, from one to another.such as,file, kafka, hdfs etc.
 
@@ -46,6 +47,10 @@ type Outputer interface {
     Version() string
 }
 ```
+#### Handler可以组合Inject struct,以实现向Input/Output中注入数据,[示例](https://github.com/luopengift/transport/blob/master/plugins/codec/inject.go)
+
+#### Transport作为library使用Input/Output,[示例](https://github.com/luopengift/transport/blob/master/plugins/output/elasticsearch/README.md)
+
 ### Input组件:
 - [x] [exec](https://github.com/luopengift/transport/blob/master/plugins/input/exec/README.md): 执行程序/脚本
 - [x] [file(s)](https://github.com/luopengift/transport/blob/master/plugins/input/file/README.md): 文件
@@ -73,34 +78,25 @@ type Outputer interface {
 - [x] grok,正则格式化成json格式,说明: ^(?P<命名>子表达式)$  被捕获的组，该组被编号且被命名 (子匹配)"
 - [x] [kv](https://github.com/luopengift/transport/blob/master/plugins/codec/README.md),string split 成json格式
 
-#### Handler可以组合Inject struct,以实现向Input/Output中注入数据,[示例](https://github.com/luopengift/transport/blob/master/plugins/codec/inject.go)
+### [Docker Useage]
+1. install docker
+
+2. download src code
 ```
-package codec
-
-import (
-    "github.com/luopengift/transport"
-    "time"
-)
-
-type DebugInjectHandler struct {
-    *transport.Inject
-}
-
-func (h *DebugInjectHandler) Init(config transport.Configer) error {
-    return nil
-}
-
-func (h *DebugInjectHandler) Handle(in, out []byte) (int, error) {
-    time.Sleep(1 * time.Second) // make program run slow down
-    h.InjectInput(in)   //将输入数据，再次inject回recv_chan，实现数据循环处理
-    n := copy(out, in)
-    return n, nil
-}
-
-func init() {
-    transport.RegistHandler("DEBUG_InjectInput", new(DebugInjectHandler))
-}
+git clone https://github.com/luopengift/transport.git
+cd transport
 ```
+
+3. build Docker image
+```
+docker build -t transport:0.0.3 .
+```
+
+4. run with docker
+```
+docker run -p 12345:12345 transport:0.0.3 -f docker-test.json
+```
+
 
 ### [使用](https://github.com/luopengift/transport/wiki/Useage)
 1. 下载

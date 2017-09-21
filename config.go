@@ -1,11 +1,11 @@
 package transport
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/luopengift/gohttp"
 	"github.com/luopengift/golibs/file"
 	"github.com/luopengift/golibs/logger"
+	"github.com/luopengift/transport/utils"
 	"strings"
 )
 
@@ -21,6 +21,13 @@ const (
 
 type Configer interface {
 	Parse(interface{}) error
+}
+
+// Implement Configer interface.
+type PluginConfig map[string]interface{}
+
+func (pc PluginConfig) Parse(v interface{}) error {
+	return utils.Format(pc, v)
 }
 
 type RuntimeConfig struct {
@@ -43,29 +50,15 @@ func NewRuntimeConfig() *RuntimeConfig {
 	}
 }
 
-type pluginConfig map[string]interface{}
-
-func (m pluginConfig) Parse(v interface{}) error {
-	b, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(b, v)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 type Config struct {
 	Runtime      *RuntimeConfig          `json:"runtime"`
-	InputConfig  map[string]pluginConfig `json:"inputs"`
-	HandleConfig map[string]pluginConfig `json:"handles"`
-	OutputConfig map[string]pluginConfig `json:"outputs"`
+	InputConfig  map[string]PluginConfig `json:"inputs"`
+	HandleConfig map[string]PluginConfig `json:"handles"`
+	OutputConfig map[string]PluginConfig `json:"outputs"`
 }
 
 func (cfg *Config) String() string {
-	var Func = func(cfg map[string]pluginConfig) string {
+	var Func = func(cfg map[string]PluginConfig) string {
 		str := ""
 		writeSpace := " "
 		for plugin, config := range cfg {
@@ -109,7 +102,7 @@ func (cfg *Config) InitInputs() ([]*Input, error) {
 	for inputName, config := range cfg.InputConfig {
 		inputer, ok := Plugins.Inputers[inputName]
 		if !ok {
-			return nil, fmt.Errorf("[%s] input is not register in pluginspluginConfig", inputName)
+			return nil, fmt.Errorf("[%s] input is not register in pluginsPluginConfig", inputName)
 		}
 		input := NewInput(inputName, inputer)
 		if err := input.Inputer.Init(config); err != nil {
@@ -125,7 +118,7 @@ func (cfg *Config) InitOutputs() ([]*Output, error) {
 	for outputName, config := range cfg.OutputConfig {
 		outputer, ok := Plugins.Outputers[outputName]
 		if !ok {
-			return nil, fmt.Errorf("[%s] output is not register in pluginspluginConfig", outputName)
+			return nil, fmt.Errorf("[%s] output is not register in pluginsPluginConfig", outputName)
 		}
 		output := NewOutput(outputName, outputer)
 		if err := output.Outputer.Init(config); err != nil {
@@ -136,18 +129,18 @@ func (cfg *Config) InitOutputs() ([]*Output, error) {
 	return outputs, nil
 }
 
-func (cfg *Config) InitCodecs() ([]*Codec, error) {
-	var codecs []*Codec
-	for codecName, config := range cfg.HandleConfig {
-		codec, ok := Plugins.Adapters[codecName]
+func (cfg *Config) InitAdapts() ([]*Adapt, error) {
+	var adapts []*Adapt
+	for adaptName, config := range cfg.HandleConfig {
+		adapt, ok := Plugins.Adapters[adaptName]
 		if !ok {
-			return nil, fmt.Errorf("[%s] codec is not register in pluginspluginConfig", codecName)
+			return nil, fmt.Errorf("[%s] adapt is not register in pluginsPluginConfig", adaptName)
 		}
-		handle := NewCodec(codecName, codec, cfg.Runtime.CHANSIZE)
+		handle := NewAdapt(adaptName, adapt, cfg.Runtime.CHANSIZE)
 		if err := handle.Adapter.Init(config); err != nil {
-			return nil, fmt.Errorf("[%s] codec init error:%v", codecName, err)
+			return nil, fmt.Errorf("[%s] adapt init error:%v", adaptName, err)
 		}
-		codecs = append(codecs, handle)
+		adapts = append(adapts, handle)
 	}
-	return codecs, nil
+	return adapts, nil
 }
